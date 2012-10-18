@@ -49,7 +49,6 @@ client = Indeed::Client.new "YOUR_PUBLISHER_NUMBER"
 
 params = {
     :jobkeys => ["5898e9d8f5c0593f", "c2c41f024581eae5"],
-    :format => 'xml',
 }
 
 client.jobs(params)
