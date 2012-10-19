@@ -7,7 +7,6 @@ module Indeed
 
     class Client
 
-        API_VERSION = '2'
         API_ROOT = 'http://api.indeed.com/ads'
         DEFAULT_FORMAT = 'json'
 
@@ -21,8 +20,9 @@ module Indeed
             :required_fields => [:jobkeys],
         }
 
-        def initialize(publisher)
+        def initialize(publisher, version = "2")
             @publisher = publisher
+            @version = version
         end
 
         def search(params)
@@ -40,7 +40,7 @@ module Indeed
         def process_request(endpoint, args)
             format = args.fetch(:format, DEFAULT_FORMAT)
             raw = format == 'xml' ? true : args.fetch(:raw, false)
-            args.merge!({:v => API_VERSION, :publisher => @publisher, :format => format})
+            args.merge!({:v => @version, :publisher => @publisher, :format => format})
             response = RestClient.get endpoint, {:params => args}
             r = (not raw) ? JSON.parse(response.to_str) : response.to_str
             r
