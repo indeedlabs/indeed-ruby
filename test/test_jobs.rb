@@ -6,7 +6,7 @@ require 'rexml/document'
 class JobsTest < Test::Unit::TestCase
 
     def setup
-        @client = Indeed::Client.new "6899355879139391"
+        @client = Indeed::Client.new "YOUR_PUBLISHER_NUMBER"
         @params = {
             :jobkeys => ["5898e9d8f5c0593f", "c2c41f024581eae5"],
         }

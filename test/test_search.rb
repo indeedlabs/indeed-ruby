@@ -6,7 +6,7 @@ require 'rexml/document'
 class SearchTest < Test::Unit::TestCase
 
     def setup
-        @client = Indeed::Client.new "6899355879139391"
+        @client = Indeed::Client.new "YOUR_PUBLISHER_NUMBER"
         @params = {
             :q => 'ruby',
             :l => 'austin',
