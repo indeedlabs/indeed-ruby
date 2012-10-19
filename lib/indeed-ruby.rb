@@ -1,6 +1,10 @@
 require 'rest_client'
 require 'json'
 module Indeed
+    
+    class IndeedClientError < StandardError
+    end
+
     class Client
 
         API_VERSION = '2'
@@ -53,10 +57,10 @@ module Indeed
                         end
                     end
                     if not has_one_required
-                        raise ArgumentError.new('You must provide one of the following %s' % [field.join(', ')])
+                        raise IndeedClientError.new('You must provide one of the following %s' % [field.join(', ')])
                     end
                 elsif not args.has_key?(field)
-                    raise ArgumentError.new('The field %s is required' % [field])
+                    raise IndeedClientError.new('The field %s is required' % [field])
                 end
             end
             args
