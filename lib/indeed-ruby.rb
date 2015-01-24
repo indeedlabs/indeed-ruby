@@ -1,7 +1,7 @@
 require 'rest_client'
 require 'json'
 module Indeed
-    
+
     class IndeedClientError < StandardError
     end
 
@@ -47,24 +47,25 @@ module Indeed
         end
 
         def valid_args(required_fields, args)
-            for field in required_fields
-                if field.kind_of?(Array)
-                    has_one_required = false
-                    for f in field
-                        if args.has_key?(f)
-                            has_one_required = true
-                            break
-                        end
-                    end
-                    if not has_one_required
-                        raise IndeedClientError.new('You must provide one of the following %s' % [field.join(', ')])
-                    end
-                elsif not args.has_key?(field)
-                    raise IndeedClientError.new('The field %s is required' % [field])
-                end
+          required_fields.each do |field|
+            if field.kind_of?(Array)
+              at_least_one_is_required_from field, args
+            else
+              raise IndeedClientError.new('The field %s is required' % [field]) unless args.has_key?(field)
             end
-            args
+          end
+
+          args
         end
 
+        def at_least_one_is_required_from field, args
+          field.each do |key|
+            if args.has_key?(key)
+              return true
+            else
+              raise IndeedClientError.new('You must provide one of the following %s' % [field.join(', ')])
+            end
+          end
+        end
     end
 end
