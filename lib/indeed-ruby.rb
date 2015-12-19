@@ -42,8 +42,7 @@ module Indeed
             raw = format == 'xml' ? true : args.fetch(:raw, false)
             args.merge!({:v => @version, :publisher => @publisher, :format => format})
             response = RestClient.get endpoint, {:params => args}
-            r = (not raw) ? JSON.parse(response.to_str) : response.to_str
-            r
+            (not raw) ? JSON.parse(response.to_str) : response.to_str
         end
 
         def valid_args(required_fields, args)
