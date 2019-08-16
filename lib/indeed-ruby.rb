@@ -7,7 +7,7 @@ module Indeed
 
     class Client
 
-        API_ROOT = 'http://api.indeed.com/ads'
+        API_ROOT = 'https://api.indeed.com/ads'
         DEFAULT_FORMAT = 'json'
 
         API_SEARCH = {
