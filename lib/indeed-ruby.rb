@@ -3,6 +3,11 @@ require 'json'
 module Indeed
     
     class IndeedClientError < StandardError
+        attr_reader :object
+        
+        def initialize(object)
+            @object = object
+        end
     end
 
     class Client
@@ -26,11 +31,22 @@ module Indeed
         end
 
         def search(params)
-            process_request(API_SEARCH[:end_point], valid_args(API_SEARCH[:required_fields], params))
+            begin
+                valid_args = valid_args(API_SEARCH[:required_fields], params)
+            rescue IndeedClientError => err
+                return error_response(err.object)
+            end
+
+            process_request(API_SEARCH[:end_point], valid_args)
         end
 
         def jobs(params)
-            valid_args = valid_args(API_JOBS[:required_fields], params)
+            begin
+                valid_args = valid_args(API_JOBS[:required_fields], params)
+            rescue IndeedClientError => err
+                return error_response(err.object)
+            end
+            
             valid_args[:jobkeys] = valid_args[:jobkeys].join(',')
             process_request(API_JOBS[:end_point], valid_args)
         end
@@ -41,9 +57,17 @@ module Indeed
             format = args.fetch(:format, DEFAULT_FORMAT)
             raw = format == 'xml' ? true : args.fetch(:raw, false)
             args.merge!({:v => @version, :publisher => @publisher, :format => format})
-            response = RestClient.get endpoint, {:params => args}
-            r = (not raw) ? JSON.parse(response.to_str) : response.to_str
-            r
+            begin
+                Timeout.timeout(5) do
+                    response = RestClient.get endpoint, {:params => args}
+                    r = (not raw) ? JSON.parse(response.to_str) : response.to_str
+                    r
+                end
+            rescue Timeout::Error => err
+                error_response({message: err.message})
+            rescue => err
+                error_response({message: err.message})
+            end
         end
 
         def valid_args(required_fields, args)
@@ -57,14 +81,17 @@ module Indeed
                         end
                     end
                     if not has_one_required
-                        raise IndeedClientError.new('You must provide one of the following %s' % [field.join(', ')])
+                        raise IndeedClientError.new({message: 'You must provide one of the following %s' % [field.join(', ')]})
                     end
                 elsif not args.has_key?(field)
-                    raise IndeedClientError.new('The field %s is required' % [field])
+                    raise IndeedClientError.new({message: 'The field %s is required' % [field]})
                 end
             end
             args
         end
 
+        def error_response(response_object)
+            { errors: [response_object], results: [], totalResults: 0 }
+        end
     end
 end
